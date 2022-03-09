@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import 'blocs/blocs.dart';
 import 'api/api.dart';
 import 'models/models.dart';
+import 'screens/screens.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,28 +41,36 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BlocBuilder<ExamCubit, ApiResponse>(
-        builder: (context, state) {
-          switch (state.status) {
-            case Status.completed:
-              final Exam data = state.data as Exam;
-              if (data.p != null) {
-                return ListView.builder(
-                  itemCount: data.p!.length,
-                  itemBuilder: (context, index) {
-                    return Container();
-                  },
-                );
-              } else {
+    return SafeArea(
+      child: Scaffold(
+        body: BlocBuilder<ExamCubit, ApiResponse>(
+          builder: (context, state) {
+            switch (state.status) {
+              case Status.completed:
+                final Exam data = state.data as Exam;
+                if (data.p != null) {
+                  return ListView.builder(
+                    itemCount: (data.p!.length / 3).floor() + 1,
+                    itemBuilder: (context, index) {
+                      return ImageInRows(
+                        imagePath: [
+                          "http://g-pst.framy.co/stk/${data.p![index].id!}.jpg",
+                          "http://g-pst.framy.co/stk/${data.p![index+1].id!}.jpg",
+                          "http://g-pst.framy.co/stk/${data.p![index+2].id!}.jpg",
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  return Container();
+                }
+              case Status.loading:
                 return Container();
-              }
-            case Status.loading:
-              return Container();
-            case Status.error:
-              return Container();
-          }
-        },
+              case Status.error:
+                return Container();
+            }
+          },
+        ),
       ),
     );
   }

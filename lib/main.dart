@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+import 'blocs/blocs.dart';
+import 'api/api.dart';
+import 'models/models.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,8 +16,15 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyHomePage(),
+    return MaterialApp(
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => ExamCubit()..fetch(),
+          ),
+        ],
+        child: const MyHomePage(),
+      ),
     );
   }
 }
@@ -29,7 +42,28 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(),
+      body: BlocBuilder<ExamCubit, ApiResponse>(
+        builder: (context, state) {
+          switch (state.status) {
+            case Status.completed:
+              final Exam data = state.data as Exam;
+              if (data.p != null) {
+                return ListView.builder(
+                  itemCount: data.p!.length,
+                  itemBuilder: (context, index) {
+                    return Container();
+                  },
+                );
+              } else {
+                return Container();
+              }
+            case Status.loading:
+              return Container();
+            case Status.error:
+              return Container();
+          }
+        },
+      ),
     );
   }
 }
